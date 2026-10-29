@@ -68,6 +68,8 @@
   .trow{border-bottom:1px solid #f0f2f6;font-size:.72rem}
   .trow:last-child{border:none}
   .trow .nm{font-size:.76rem}
+  .rng{font-size:.55rem;color:var(--dim);margin-top:2px}
+  .rng b{color:var(--accent);font-weight:600}
   .trow.low{background:rgba(10,160,110,.055)}
   .trow.high{background:rgba(224,56,78,.05)}
   .cell .v{font-weight:700;font-size:.78rem}
@@ -185,6 +187,7 @@ function renderList() {
     ${list.map(x => `
     <div class="trow ${cls(x.pePct)}" data-code="${x.code}">
       <div class="nm">${x.name}${x.kind==='broad'?'<span class="tag">宽基</span>':''}</div>
+      ${x.peLo?`<div class="rng">10年PE ${x.peLo} ~ ${x.peHi}</div>`:''}
       <div class="cell"><span class="v" style="color:${col(x.pePct)}">${x.pe}</span>
         <div class="p" style="color:${col(x.pePct)}">${x.pePct}%</div>
         <div class="mini"><i class="bg-${cls(x.pePct)}" style="width:${x.pePct}%"></i></div></div>
@@ -237,7 +240,8 @@ $('#list').onclick = e => {
   const x = D.indices.find(i => i.code === r.dataset.code); if (!x) return;
   const div = document.createElement('div');
   div.className = 'detail';
-  div.innerHTML = `代码 ${x.code} · ROE ${x.roe}% · 股息率 ${x.div}% · 国债参考 ${x.bond}%<br>盈利收益率(1/PE) ${(100/x.pe).toFixed(2)}% · PE分位 ${x.pePct}% · PB分位 ${x.pbPct}%`;
+  const pos = x.peLo && x.pe > x.peLo && x.peHi ? Math.round((x.pe - x.peLo) / (x.peHi - x.peLo) * 100) : null;
+  div.innerHTML = `代码 ${x.code} · ROE ${x.roe}% · 股息率 ${x.div}% · 国债参考 ${x.bond}%<br>盈利收益率(1/PE) ${(100/x.pe).toFixed(2)}% · PE分位 ${x.pePct}% · PB分位 ${x.pbPct}%${pos!==null?`<br>10年PE区间 ${x.peLo} ~ ${x.peHi} · 当前位于区间的 ${pos}% 位置`:''}`;
   r.after(div);
 };
 $('#refresh').onclick = load;
