@@ -186,8 +186,8 @@ function renderList() {
     <div class="thead"><span>指数</span><span>PE / 分位</span><span>PB / 分位</span><span style="text-align:center">评级</span></div>
     ${list.map(x => `
     <div class="trow ${cls(x.pePct)}" data-code="${x.code}">
-      <div class="nm">${x.name}${x.kind==='broad'?'<span class="tag">宽基</span>':''}</div>
-      ${x.peLo?`<div class="rng">10年PE ${x.peLo} ~ ${x.peHi}</div>`:''}
+      <div><div class="nm">${x.name}${x.kind==='broad'?'<span class="tag">宽基</span>':''}</div>
+      ${x.peLo?`<div class="rng">10年PE ${x.peLo} ~ ${x.peHi}</div>`:''}</div>
       <div class="cell"><span class="v" style="color:${col(x.pePct)}">${x.pe}</span>
         <div class="p" style="color:${col(x.pePct)}">${x.pePct}%</div>
         <div class="mini"><i class="bg-${cls(x.pePct)}" style="width:${x.pePct}%"></i></div></div>
