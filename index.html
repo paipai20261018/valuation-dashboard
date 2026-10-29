@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>估值看板 · 全市场</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1e3a">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root{
+    --bg:#0b1220; --card:#141d2f; --card2:#1b2740; --line:#26324a;
+    --text:#e6edf7; --muted:#8595ad; --dim:#5a6b85; --accent:#4f8cff;
+    --green:#16c784; --yellow:#f0b90b; --red:#f6465d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;font-size:15px}
+  header{padding:16px;display:flex;justify-content:space-between;align-items:center;
+    position:sticky;top:0;background:rgba(11,18,32,.94);backdrop-filter:blur(12px);z-index:20;
+    border-bottom:1px solid var(--line)}
+  header h1{font-size:1.08rem;font-weight:600}
+  header .sub{font-size:.66rem;color:var(--muted);margin-top:3px}
+  #refresh{border:1px solid var(--line);background:var(--card);color:var(--accent);
+    padding:7px 13px;border-radius:10px;font-size:.78rem;cursor:pointer}
+  #refresh:active{transform:scale(.95)}
+  main{padding:14px;max-width:720px;margin:0 auto}
+  .hero{background:linear-gradient(135deg,#16233d,#1d2f52);border:1px solid #2b3b5c;
+    border-radius:18px;padding:18px;margin-bottom:12px}
+  .hero .lbl{font-size:.7rem;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+  .hero .val{font-size:2.1rem;font-weight:700;letter-spacing:-1px}
+  .hero .val small{font-size:.8rem;font-weight:400;color:var(--muted);margin-left:6px;letter-spacing:0}
+  .gauge{height:9px;border-radius:5px;margin-top:15px;position:relative;
+    background:linear-gradient(90deg,#16c784,#f0b90b,#f6465d)}
+  .gauge i{position:absolute;top:-4px;width:3px;height:17px;background:#fff;border-radius:2px;
+    box-shadow:0 0 8px rgba(255,255,255,.9);transition:left .6s}
+  .gl{display:flex;justify-content:space-between;font-size:.6rem;color:var(--dim);margin-top:5px}
+  .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}
+  .stat3 div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 6px;text-align:center}
+  .stat3 b{display:block;font-size:1.3rem;font-weight:700}
+  .stat3 span{font-size:.62rem;color:var(--muted)}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+  .duo .card{margin:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:9px}
+  .card .t{font-size:.66rem;color:var(--muted);margin-bottom:7px;display:flex;justify-content:space-between}
+  .card .v{font-size:1.35rem;font-weight:700;letter-spacing:-.5px}
+  .card .v small{font-size:.68rem;font-weight:400;color:var(--muted)}
+  .hint{font-size:.6rem;color:var(--dim);margin-top:6px;line-height:1.5}
+  .tabs{display:flex;gap:7px;margin:14px 0 10px;flex-wrap:wrap}
+  .tabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);
+    padding:7px 13px;border-radius:18px;font-size:.75rem;cursor:pointer}
+  .tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .sec{font-size:.7rem;color:var(--muted);margin:4px 0 8px;letter-spacing:.5px}
+  .row{display:flex;justify-content:space-between;align-items:center}
+  .nm{font-size:.92rem;font-weight:600}
+  .cd{font-size:.58rem;color:var(--dim);margin-left:5px}
+  .pct{font-size:1.1rem;font-weight:700}
+  .tag{font-size:.58rem;padding:2px 7px;border-radius:5px;margin-left:7px;vertical-align:2px}
+  .t-low{background:rgba(22,199,132,.14);color:var(--green)}
+  .t-mid{background:rgba(240,185,11,.14);color:var(--yellow)}
+  .t-high{background:rgba(246,70,93,.14);color:var(--red)}
+  .bar{height:5px;background:#1e2b44;border-radius:3px;margin:9px 0 7px;position:relative;overflow:hidden}
+  .bar i{position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .5s}
+  .meta{display:flex;gap:13px;font-size:.64rem;color:var(--muted);flex-wrap:wrap}
+  .meta b{color:var(--text);font-weight:600}
+  .bg-low{background:var(--green)}.bg-mid{background:var(--yellow)}.bg-high{background:var(--red)}
+  .empty{text-align:center;color:var(--dim);padding:40px 0;font-size:.85rem}
+  footer{text-align:center;font-size:.58rem;color:var(--dim);padding:18px 0 6px;line-height:1.6}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>📊 估值看板</h1><div class="sub" id="upd">加载中…</div></div>
+  <button id="refresh">↻ 刷新</button>
+</header>
+<main>
+  <div class="hero">
+    <div class="lbl"><span>全市场估值温度</span><span id="tempWord"></span></div>
+    <div class="val"><span id="tempVal">--</span><small>/ 100</small></div>
+    <div class="gauge"><i id="tempPin" style="left:50%"></i></div>
+    <div class="gl"><span>低估 0</span><span>50</span><span>高估 100</span></div>
+  </div>
+
+  <div class="stat3">
+    <div><b style="color:var(--green)" id="cLow">--</b><span>低估</span></div>
+    <div><b style="color:var(--yellow)" id="cMid">--</b><span>中性</span></div>
+    <div><b style="color:var(--red)" id="cHigh">--</b><span>高估</span></div>
+  </div>
+
+  <div class="duo">
+    <div class="card">
+      <div class="t"><span>恐慌指数 VIX</span><span>美股</span></div>
+      <div class="v" id="vixVal">--</div>
+      <div class="hint" id="vixHint">&lt;15 贪婪 · 15-25 中性 · 25-35 警惕 · &gt;35 恐慌</div>
+    </div>
+    <div class="card">
+      <div class="t"><span>两市成交额</span><span>A股</span></div>
+      <div class="v"><span id="toVal">--</span><small> 亿元</small></div>
+      <div class="hint">量能反映市场情绪热度</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="t"><span>股债性价比（沪深300）</span><span>盈利收益率 ÷ 国债利率</span></div>
+    <div class="v"><span id="erpVal">--</span><small> 倍</small></div>
+    <div class="hint" id="erpHint">比值越大，股票相对债券越便宜。&gt;2 股票很便宜 · 1~2 正常 · &lt;1 债券更优</div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button data-mkt="all" class="on">全部</button>
+    <button data-mkt="cn">A股</button>
+    <button data-mkt="us">美股</button>
+    <button data-mkt="hk">港股</button>
+    <button data-mkt="low">仅低估</button>
+  </div>
+  <div class="sec" id="secTitle">指数估值 · 按 PE 分位升序</div>
+  <div id="list"></div>
+
+  <footer>
+    数据来源：蛋卷基金 · 腾讯行情<br>
+    分位=当前估值在历史区间的位置，仅供参考，不构成投资建议
+  </footer>
+</main>
+<script>
+let D=null, mkt='all';
+const $=s=>document.querySelector(s);
+const cls=p=>p<30?'low':p<70?'mid':'high';
+const txt=p=>p<30?'低估':p<70?'中性':'高估';
+const col=p=>p<30?'var(--green)':p<70?'var(--yellow)':'var(--red)';
+
+function tempWord(t){return t<30?'低位 · 可积极':t<50?'中低 · 逢低布局':t<70?'中性 · 持有观望':t<85?'偏高 · 谨慎追高':'高位 · 注意风险'}
+function renderTop(){
+  $('#tempVal').textContent=D.temperature;
+  $('#tempWord').textContent=tempWord(D.temperature);
+  $('#tempPin').style.left=Math.min(97,Math.max(3,D.temperature))+'%';
+  $('#cLow').textContent=D.low_count;$('#cMid').textContent=D.mid_count;$('#cHigh').textContent=D.high_count;
+  $('#upd').textContent='更新于 '+D.generated_at;
+  if(D.vix){
+    const v=D.vix.value;
+    $('#vixVal').textContent=v;
+    $('#vixVal').style.color=v>35?'var(--red)':v>25?'var(--yellow)':v<15?'var(--green)':'var(--text)';
+  } else $('#vixVal').textContent='--';
+  if(D.erp){
+    $('#erpVal').textContent=D.erp;
+    $('#erpVal').style.color=D.erp>2?'var(--green)':D.erp<1?'var(--red)':'var(--yellow)';
+    if(D.hs300_ep)$('#erpHint').innerHTML='盈利收益率 '+D.hs300_ep+'% ÷ 国债利率 '+D.hs300_bond+'%。比值越大，股票相对越便宜。&gt;2 股票很便宜 · &lt;1 债券更优';
+  }
+  $('#toVal').textContent=D.turnover!=null?Number(D.turnover).toLocaleString():'--';
+}
+function renderList(){
+  let list=D.indices;
+  if(mkt==='low')list=list.filter(x=>x.pePct<30);
+  else if(mkt!=='all')list=list.filter(x=>x.market===mkt);
+  list=list.slice().sort((a,b)=>a.pePct-b.pePct);
+  $('#secTitle').textContent='指数估值 · 共 '+list.length+' 个 · 按 PE 分位升序';
+  $('#list').innerHTML=list.length?list.map(x=>`
+  <div class="card">
+    <div class="row">
+      <div><span class="nm">${x.name}</span><span class="cd">${x.code}</span></div>
+      <div><span class="pct" style="color:${col(x.pePct)}">${x.pePct}%</span><span class="tag t-${cls(x.pePct)}">${txt(x.pePct)}</span></div>
+    </div>
+    <div class="bar"><i class="bg-${cls(x.pePct)}" style="width:${x.pePct}%"></i></div>
+    <div class="meta"><span>PE <b>${x.pe}</b></span><span>PB <b>${x.pb}</b></span><span>ROE <b>${x.roe}%</b></span><span>股息 <b>${x.div}%</b></span></div>
+  </div>`).join(''):'<div class="empty">没有符合条件的指数</div>';
+}
+async function load(){
+  try{
+    const r=await fetch('data.json?t='+Date.now());
+    D=await r.json();
+    renderTop();renderList();
+  }catch(e){
+    $('#list').innerHTML='<div class="empty">加载失败，请点击刷新重试</div>';
+  }
+}
+document.getElementById('tabs').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  mkt=e.target.dataset.mkt;renderList();
+});
+$('#refresh').onclick=load;
+load();
+</script>
+</body>
+</html>
