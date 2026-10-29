@@ -109,6 +109,37 @@ def summarize(vals, label):
     }
 
 
+def fetch_pe_ranges(codes):
+    """从中证官网获取 PE 十年历史区间 {csindex_code: (min, max)}"""
+    out = {}
+    H2 = dict(UA, Referer="https://www.csindex.com.cn/")
+    import time as _t
+    for code in codes:
+        try:
+            u = (f"https://www.csindex.com.cn/csindex-home/perf/index-perf"
+                 f"?indexCode={code}&startDate=20160101&endDate=20261231")
+            r = requests.get(u, headers=H2, timeout=30)
+            if r.status_code != 200:
+                continue
+            data = r.json().get("data") or []
+            pes = [x["peg"] for x in data if x.get("peg")]
+            if len(pes) > 200:  # 至少约1年数据才算有效区间
+                out[code] = (round(min(pes), 2), round(max(pes), 2))
+        except Exception:
+            pass
+        _t.sleep(0.15)
+    return out
+
+
+def csindex_code(dj_code):
+    """蛋卷代码 → 中证官网代码；无法映射返回 None"""
+    if dj_code.startswith("SH"):
+        return dj_code[2:]
+    if dj_code.startswith("CSI"):
+        return dj_code[3:]
+    return None  # SZ(国证) / HK / SP 开头拿不到
+
+
 def main():
     vals = fetch_valuations()
     if not vals:
@@ -128,6 +159,15 @@ def main():
     if hs300 and hs300["pe"] > 0 and hs300["bond"] > 0:
         ep = 100.0 / hs300["pe"]
         erp = round(ep / hs300["bond"], 2)
+
+    # 历史区间：仅中证官网有的指数（A股部分）
+    cn_codes = sorted({csindex_code(v["code"]) for v in vals
+                       if v["market"] == "cn" and csindex_code(v["code"])})
+    ranges = fetch_pe_ranges(cn_codes)
+    for v in vals:
+        c = csindex_code(v["code"])
+        if c and c in ranges:
+            v["peLo"], v["peHi"] = ranges[c]
 
     out = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
