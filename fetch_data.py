@@ -13,6 +13,31 @@ import requests
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
+# 宽基指数白名单（其余归为行业/主题）
+BROAD = {
+    "SH000300", "SH000905", "SH000016", "SH000852", "SH000688", "SZ399006",
+    "SZ399001", "SH000001", "SZ399005", "SH000010", "SH000009", "SZ399102",
+    "SH000903", "SH000922", "SH000015", "SZ399324", "SZ399550", "SH000925",
+    "SP500", "NDX", "SPACEVCP", "SPCQVCP", "CSPSADRP",
+    "HKHSI", "HKHSCEI", "HKHSTECH",
+}
+# 中概/港股相关（即使代码前缀是 CSI 也归港股）
+HK_KEY = {"CSIH30533", "CSIH11136", "SPHCMSHP", "HKHSSCNE"}
+# 明确属于美股的
+US_KEY = {"SPACEVCP", "CSPSADRP", "SPCQVCP", "SP500", "NDX"}
+
+
+def market_of(code):
+    if code in HK_KEY or code.startswith("HK"):
+        return "hk"
+    if code in US_KEY or code.startswith(("SP", "CSP")):
+        return "us"
+    return "cn"
+
+
+def kind_of(code):
+    return "broad" if code in BROAD else "sector"
+
 
 def fetch_valuations():
     r = requests.get("https://danjuanfunds.com/djapi/index_eva/dj", headers=UA, timeout=20)
@@ -34,7 +59,8 @@ def fetch_valuations():
             "roe": round(it["roe"] * 100, 1),
             "div": round(it["yeild"] * 100, 2),
             "bond": round((it.get("bond_yeild") or 0) * 100, 2),
-            "market": market,
+            "market": market_of(code),
+            "kind": kind_of(code),
             "type": it["eva_type"],  # low / mid / high
         })
     return out
@@ -68,15 +94,33 @@ def fetch_turnover():
         return None
 
 
+def summarize(vals, label):
+    """计算一个分组（市场或大类）的温度与统计"""
+    if not vals:
+        return None
+    pcts = [v["pePct"] for v in vals]
+    return {
+        "label": label,
+        "count": len(vals),
+        "temp": round(sum(pcts) / len(pcts), 1),
+        "low": sum(1 for v in vals if v["pePct"] < 30),
+        "mid": sum(1 for v in vals if 30 <= v["pePct"] < 70),
+        "high": sum(1 for v in vals if v["pePct"] >= 70),
+    }
+
+
 def main():
     vals = fetch_valuations()
     if not vals:
         print("估值数据为空，退出")
         return 1
-    pcts = [v["pePct"] for v in vals]
-    temp = round(sum(pcts) / len(pcts), 1)
-    low = sum(1 for v in vals if v["pePct"] < 30)
-    high = sum(1 for v in vals if v["pePct"] >= 70)
+
+    markets = {}
+    for m in ("cn", "us", "hk"):
+        s = summarize([v for v in vals if v["market"] == m], m)
+        if s:
+            markets[m] = s
+    markets["all"] = summarize(vals, "all")
 
     # 股债性价比：沪深300 盈利收益率(1/PE) ÷ 10年国债收益率
     hs300 = next((v for v in vals if v["code"] == "SH000300"), None)
@@ -87,10 +131,7 @@ def main():
 
     out = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "temperature": temp,
-        "low_count": low,
-        "high_count": high,
-        "mid_count": len(vals) - low - high,
+        "markets": markets,
         "vix": fetch_vix(),
         "turnover": fetch_turnover(),
         "erp": erp,
@@ -100,7 +141,7 @@ def main():
     }
     with open("data.json", "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
-    print("data.json 完成: 温度", temp, "指数数", len(vals))
+    print("data.json 完成", {k: v["temp"] for k, v in markets.items()}, "指数数", len(vals))
     return 0
 
 
