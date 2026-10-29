@@ -12,72 +12,72 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{
-    --bg:#0b1220; --card:#141d2f; --line:#26324a;
-    --text:#e6edf7; --muted:#8595ad; --dim:#5a6b85; --accent:#4f8cff;
-    --green:#16c784; --yellow:#f0b90b; --red:#f6465d;
+    --bg:#f4f6f9; --card:#ffffff; --line:#e7ebf1;
+    --text:#1c2330; --muted:#69738a; --dim:#9aa3b5; --accent:#2f6fed;
+    --green:#0aa06e; --yellow:#d99a06; --red:#e0384e;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-    background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;font-size:15px}
-  header{padding:14px 16px 0;position:sticky;top:0;background:rgba(11,18,32,.96);
+    background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;font-size:15px;-webkit-font-smoothing:antialiased}
+  header{padding:14px 16px 0;position:sticky;top:0;background:rgba(244,246,249,.96);
     backdrop-filter:blur(14px);z-index:20;border-bottom:1px solid var(--line)}
   .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
   .top h1{font-size:1.05rem;font-weight:600}
   .top .sub{font-size:.63rem;color:var(--dim);margin-top:2px}
-  #refresh{border:1px solid var(--line);background:var(--card);color:var(--accent);
+  #refresh{border:1px solid var(--line);background:var(--card);box-shadow:0 1px 3px rgba(20,40,80,.06);color:var(--accent);
     padding:6px 12px;border-radius:9px;font-size:.75rem}
   #refresh:active{transform:scale(.95)}
   /* 市场切换 */
   .mkts{display:flex;gap:6px;padding-bottom:10px;overflow-x:auto;scrollbar-width:none}
   .mkts::-webkit-scrollbar{display:none}
-  .mkts button{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--muted);
+  .mkts button{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--muted);
     padding:7px 15px;border-radius:19px;font-size:.78rem;transition:.18s;white-space:nowrap}
   .mkts button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
   main{padding:13px;max-width:720px;margin:0 auto}
 
   /* 温度卡片 */
-  .hero{background:linear-gradient(135deg,#16233d,#1d2f52);border:1px solid #2b3b5c;
+  .hero{background:linear-gradient(135deg,#2f6fed,#5a8cf5);border:1px solid #2f6fed;box-shadow:0 6px 20px rgba(47,111,237,.25);
     border-radius:17px;padding:16px;margin-bottom:11px}
-  .hero .lbl{font-size:.69rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
-  .hero .lbl .badge{font-size:.58rem;padding:2px 8px;border-radius:6px;background:rgba(79,140,255,.16);color:var(--accent)}
+  .hero .lbl{font-size:.69rem;color:rgba(255,255,255,.85);display:flex;justify-content:space-between;align-items:center}
+  .hero .lbl .badge{font-size:.58rem;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.22);color:#fff}
   .hero .val{font-size:2rem;font-weight:700;letter-spacing:-1px;margin-top:5px}
-  .hero .val small{font-size:.75rem;font-weight:400;color:var(--muted);margin-left:5px;letter-spacing:0}
+  .hero .val{color:#fff}.hero .val small{font-size:.75rem;font-weight:400;color:rgba(255,255,255,.8);margin-left:5px;letter-spacing:0}
   .gauge{height:8px;border-radius:5px;margin-top:13px;position:relative;
     background:linear-gradient(90deg,#16c784,#f0b90b,#f6465d)}
   .gauge i{position:absolute;top:-4px;width:3px;height:16px;background:#fff;border-radius:2px;
-    box-shadow:0 0 7px rgba(255,255,255,.9);transition:left .5s}
-  .gl{display:flex;justify-content:space-between;font-size:.58rem;color:var(--dim);margin-top:4px}
+    box-shadow:0 0 6px rgba(0,0,0,.3);transition:left .5s}
+  .gl{display:flex;justify-content:space-between;font-size:.58rem;color:rgba(255,255,255,.75);margin-top:4px}
   .mins{display:flex;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)}
-  .mins div{font-size:.62rem;color:var(--muted)}
-  .mins b{font-size:.9rem;font-weight:700;margin-right:3px}
+  .mins{border-top:1px solid rgba(255,255,255,.25)!important}.mins div{font-size:.62rem;color:rgba(255,255,255,.85)}
+  .mins b{font-size:.9rem;font-weight:700;margin-right:3px;color:#fff}
 
   /* 市场对比 */
   .cmps{font-size:.7rem;color:var(--muted);margin:14px 0 8px;letter-spacing:.4px}
   .cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-  .cmp div{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 8px;text-align:center;transition:.18s}
-  .cmp div.on{border-color:var(--accent);background:rgba(79,140,255,.09)}
+  .cmp div{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 8px;text-align:center;transition:.18s;box-shadow:0 1px 4px rgba(20,40,80,.05)}
+  .cmp div.on{border-color:var(--accent);background:rgba(47,111,237,.07)}
   .cmp .nm2{font-size:.66rem;color:var(--muted);margin-bottom:3px}
   .cmp .tv{font-size:1.25rem;font-weight:700;letter-spacing:-.5px}
   .cmp .st{font-size:.56rem;color:var(--dim);margin-top:2px}
 
   /* 数据表格（数据网站风格） */
-  .tbl{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .tbl{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:0 1px 4px rgba(20,40,80,.05)}
   .thead,.trow{display:grid;grid-template-columns:minmax(86px,1.15fr) .95fr .95fr .62fr;gap:4px;
     align-items:center;padding:9px 10px}
-  .thead{background:#101a2e;color:var(--dim);font-size:.58rem;border-bottom:1px solid var(--line)}
-  .trow{border-bottom:1px solid rgba(255,255,255,.04);font-size:.72rem}
+  .thead{background:#f8fafc;color:var(--dim);font-size:.58rem;border-bottom:1px solid var(--line)}
+  .trow{border-bottom:1px solid #f0f2f6;font-size:.72rem}
   .trow:last-child{border:none}
   .trow .nm{font-size:.76rem}
-  .trow.low{background:rgba(22,199,132,.05)}
-  .trow.high{background:rgba(246,70,93,.05)}
+  .trow.low{background:rgba(10,160,110,.055)}
+  .trow.high{background:rgba(224,56,78,.05)}
   .cell .v{font-weight:700;font-size:.78rem}
   .cell .p{font-size:.56rem;margin-top:1px}
-  .mini{height:3px;background:#1e2b44;border-radius:2px;margin-top:3px;position:relative;overflow:hidden}
+  .mini{height:3px;background:#edf0f5;border-radius:2px;margin-top:3px;position:relative;overflow:hidden}
   .mini i{position:absolute;left:0;top:0;height:100%;border-radius:2px}
   .rate{font-size:.6rem;padding:3px 0;text-align:center;border-radius:7px;font-weight:600}
-  .detail{background:#101a2e;font-size:.62rem;color:var(--muted);padding:8px 12px 9px;line-height:1.7;
+  .detail{background:#f8fafc;font-size:.62rem;color:var(--muted);padding:8px 12px 9px;line-height:1.7;
     border-bottom:1px solid var(--line)}
-  .bg-low{background:rgba(22,199,132,.16)}.bg-mid{background:rgba(240,185,11,.16)}.bg-high{background:rgba(246,70,93,.16)}
+  .bg-low{background:rgba(10,160,110,.18)}.bg-mid{background:rgba(217,154,6,.18)}.bg-high{background:rgba(224,56,78,.18)}
   .tag{font-size:.55rem;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:1.5px;background:rgba(79,140,255,.14);color:var(--accent)}
 
   /* 次级筛选 */
@@ -86,7 +86,7 @@
   .chips::-webkit-scrollbar{display:none}
   .chips button{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--muted);
     padding:5px 11px;border-radius:13px;font-size:.71rem}
-  .chips button.on{background:rgba(79,140,255,.16);border-color:rgba(79,140,255,.5);color:var(--accent)}
+  .chips button.on{background:rgba(47,111,237,.1);border-color:rgba(47,111,237,.45);color:var(--accent)}
   .sortbtn{border:1px solid var(--line);background:var(--card);color:var(--muted);
     padding:5px 10px;border-radius:11px;font-size:.71rem;white-space:nowrap}
   .cnt{font-size:.65rem;color:var(--dim);margin-bottom:8px}
@@ -155,9 +155,9 @@ function renderHero() {
   $('#tempVal').textContent = s.temp;
   $('#tempPin').style.left = Math.min(97, Math.max(3, s.temp)) + '%';
   $('#mins').innerHTML = `
-    <div><b style="color:var(--green)">${s.low}</b>低估</div>
-    <div><b style="color:var(--yellow)">${s.mid}</b>中性</div>
-    <div><b style="color:var(--red)">${s.high}</b>高估</div>
+    <div><b style="color:#7dffc9">${s.low}</b>低估</div>
+    <div><b style="color:#ffe08a">${s.mid}</b>中性</div>
+    <div><b style="color:#ffa1ae">${s.high}</b>高估</div>
     <div><b style="color:var(--text)">${s.count}</b>指数</div>`;
 }
 
