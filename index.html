@@ -60,20 +60,25 @@
   .cmp .tv{font-size:1.25rem;font-weight:700;letter-spacing:-.5px}
   .cmp .st{font-size:.56rem;color:var(--dim);margin-top:2px}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:9px}
-  .row{display:flex;justify-content:space-between;align-items:center}
-  .nm{font-size:.92rem;font-weight:600}
-  .cd{font-size:.57rem;color:var(--dim);margin-left:5px}
-  .pct{font-size:1.08rem;font-weight:700}
-  .tag{font-size:.57rem;padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:2px}
-  .t-low{background:rgba(22,199,132,.14);color:var(--green)}
-  .t-mid{background:rgba(240,185,11,.14);color:var(--yellow)}
-  .t-high{background:rgba(246,70,93,.14);color:var(--red)}
-  .bar{height:5px;background:#1e2b44;border-radius:3px;margin:9px 0 7px;position:relative;overflow:hidden}
-  .bar i{position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .45s}
-  .meta{display:flex;gap:12px;font-size:.63rem;color:var(--muted);flex-wrap:wrap}
-  .meta b{color:var(--text);font-weight:600}
-  .bg-low{background:var(--green)}.bg-mid{background:var(--yellow)}.bg-high{background:var(--red)}
+  /* 数据表格（数据网站风格） */
+  .tbl{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .thead,.trow{display:grid;grid-template-columns:minmax(86px,1.15fr) .95fr .95fr .62fr;gap:4px;
+    align-items:center;padding:9px 10px}
+  .thead{background:#101a2e;color:var(--dim);font-size:.58rem;border-bottom:1px solid var(--line)}
+  .trow{border-bottom:1px solid rgba(255,255,255,.04);font-size:.72rem}
+  .trow:last-child{border:none}
+  .trow .nm{font-size:.76rem}
+  .trow.low{background:rgba(22,199,132,.05)}
+  .trow.high{background:rgba(246,70,93,.05)}
+  .cell .v{font-weight:700;font-size:.78rem}
+  .cell .p{font-size:.56rem;margin-top:1px}
+  .mini{height:3px;background:#1e2b44;border-radius:2px;margin-top:3px;position:relative;overflow:hidden}
+  .mini i{position:absolute;left:0;top:0;height:100%;border-radius:2px}
+  .rate{font-size:.6rem;padding:3px 0;text-align:center;border-radius:7px;font-weight:600}
+  .detail{background:#101a2e;font-size:.62rem;color:var(--muted);padding:8px 12px 9px;line-height:1.7;
+    border-bottom:1px solid var(--line)}
+  .bg-low{background:rgba(22,199,132,.16)}.bg-mid{background:rgba(240,185,11,.16)}.bg-high{background:rgba(246,70,93,.16)}
+  .tag{font-size:.55rem;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:1.5px;background:rgba(79,140,255,.14);color:var(--accent)}
 
   /* 次级筛选 */
   .filters{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:14px 0 9px}
@@ -174,16 +179,20 @@ function renderList() {
   else if (kind === 'low') list = list.filter(x => x.pePct < 30);
   else if (kind === 'high') list = list.filter(x => x.pePct >= 70);
   list = list.slice().sort((a,b) => sortAsc ? a.pePct - b.pePct : b.pePct - a.pePct);
-  $('#cnt').textContent = `${MN[mkt]} · ${list.length} 个指数 · 按 PE 分位${sortAsc?'从低到高':'从高到低'}`;
-  $('#list').innerHTML = list.length ? list.map(x => `
-  <div class="card">
-    <div class="row">
-      <div><span class="nm">${x.name}</span><span class="cd">${x.code}</span>${x.kind==='broad'?'<span class="tag" style="background:rgba(79,140,255,.13);color:var(--accent)">宽基</span>':''}</div>
-      <div><span class="pct" style="color:${col(x.pePct)}">${x.pePct}%</span><span class="tag t-${cls(x.pePct)}">${txt(x.pePct)}</span></div>
-    </div>
-    <div class="bar"><i class="bg-${cls(x.pePct)}" style="width:${x.pePct}%"></i></div>
-    <div class="meta"><span>PE <b>${x.pe}</b></span><span>PB <b>${x.pb}</b></span><span>ROE <b>${x.roe}%</b></span><span>股息 <b>${x.div}%</b></span></div>
-  </div>`).join('') : '<div class="empty">该条件下没有指数</div>';
+  $('#cnt').textContent = `${MN[mkt]} · ${list.length} 个指数 · 按PE分位${sortAsc?'低→高':'高→低'} · 点名称查看详情`;
+  $('#list').innerHTML = list.length ? `<div class="tbl">
+    <div class="thead"><span>指数</span><span>PE / 分位</span><span>PB / 分位</span><span style="text-align:center">评级</span></div>
+    ${list.map(x => `
+    <div class="trow ${cls(x.pePct)}" data-code="${x.code}">
+      <div class="nm">${x.name}${x.kind==='broad'?'<span class="tag">宽基</span>':''}</div>
+      <div class="cell"><span class="v" style="color:${col(x.pePct)}">${x.pe}</span>
+        <div class="p" style="color:${col(x.pePct)}">${x.pePct}%</div>
+        <div class="mini"><i class="bg-${cls(x.pePct)}" style="width:${x.pePct}%"></i></div></div>
+      <div class="cell"><span class="v" style="color:${col(x.pbPct)}">${x.pb}</span>
+        <div class="p" style="color:${col(x.pbPct)}">${x.pbPct}%</div>
+        <div class="mini"><i class="bg-${cls(x.pbPct)}" style="width:${x.pbPct}%"></i></div></div>
+      <div><div class="rate bg-${cls(x.pePct)}" style="color:${col(x.pePct)}">${txt(x.pePct)}</div></div>
+    </div>`).join('')}</div>` : '<div class="empty">该条件下没有指数</div>';
 }
 
 function renderAll() { renderHero(); renderCmp(); renderList(); }
@@ -219,6 +228,17 @@ $('#sortBtn').onclick = () => {
   sortAsc = !sortAsc;
   $('#sortBtn').textContent = '分位 ' + (sortAsc ? '↑' : '↓');
   renderList();
+};
+$('#list').onclick = e => {
+  const r = e.target.closest('.trow'); if (!r) return;
+  const det = r.nextElementSibling;
+  if (det && det.classList.contains('detail')) { det.remove(); return; }
+  document.querySelectorAll('.detail').forEach(x => x.remove());
+  const x = D.indices.find(i => i.code === r.dataset.code); if (!x) return;
+  const div = document.createElement('div');
+  div.className = 'detail';
+  div.innerHTML = `代码 ${x.code} · ROE ${x.roe}% · 股息率 ${x.div}% · 国债参考 ${x.bond}%<br>盈利收益率(1/PE) ${(100/x.pe).toFixed(2)}% · PE分位 ${x.pePct}% · PB分位 ${x.pbPct}%`;
+  r.after(div);
 };
 $('#refresh').onclick = load;
 load();
